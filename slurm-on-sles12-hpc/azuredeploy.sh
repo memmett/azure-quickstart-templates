@@ -234,6 +234,7 @@ install_slurm()
     if is_master; then
         /usr/sbin/slurmctld -vvvv
     else
+        ulimit -l unlimited
         /usr/sbin/slurmd -vvvv
     fi
 
