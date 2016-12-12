@@ -158,6 +158,20 @@
     "storageAccountType": "Standard_LRS"
   },
   "resources": [
+	  {
+            
+            "type": "Microsoft.Compute/availabilitySets",
+            "name": "ib_availset",
+            "apiVersion": "2015-06-15",
+            "location": "[resourceGroup().location]",
+            "tags": {},
+            "properties": {
+                "platformUpdateDomainCount": 5,
+                "platformFaultDomainCount": 3
+            },
+            "resources": [],
+            "dependsOn": []
+        },	  
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('newStorageAccountName')]",
