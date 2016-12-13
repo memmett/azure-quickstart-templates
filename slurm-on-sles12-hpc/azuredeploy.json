@@ -529,13 +529,17 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), 'worker', copyindex())]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), 'worker', copyindex())]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('newAvailabilitySetName'))]"
       ],
       "copy": {
         "name": "foo",
         "count": "[parameters('workerNodeCount')]"
       },
       "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('newAvailabilitySetName'))]"
+        },
         "hardwareProfile": {
           "vmSize": "[parameters('workerNodeSize')]"
         },
