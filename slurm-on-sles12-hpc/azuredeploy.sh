@@ -56,15 +56,15 @@ is_master()
 add_sdk_repo()
 {
     repoFile="/etc/zypp/repos.d/SMT-http_smt-azure_susecloud_net:SLE-SDK12-Pool.repo"
-	
+
     if [ -e "$repoFile" ]; then
         echo "SLES 12 SDK Repository already installed"
         return 0
     fi
-	
-	wget $TEMPLATE_BASE_URL/sles12sdk.repo
-	
-	cp sles12sdk.repo "$repoFile"
+
+    wget $TEMPLATE_BASE_URL/sles12sdk.repo
+
+    cp sles12sdk.repo "$repoFile"
 
     # init new repo
     zypper -n search nfs > /dev/null 2>&1
@@ -89,7 +89,7 @@ install_pkgs()
 setup_data_disks()
 {
     mountPoint="$1"
-	createdPartitions=""
+        createdPartitions=""
 
     # Loop through and partition disks until not found
     for disk in sdc sdd sde sdf sdg sdh sdi sdj sdk sdl sdm sdn sdo sdp sdq sdr; do
@@ -105,15 +105,15 @@ fd
 w
 EOF
         createdPartitions="$createdPartitions /dev/${disk}1"
-	done
+    done
 
     # Create RAID-0 volume
     if [ -n "$createdPartitions" ]; then
         devices=`echo $createdPartitions | wc -w`
         mdadm --create /dev/md10 --level 0 --raid-devices $devices $createdPartitions
-	    mkfs -t ext4 /dev/md10
-	    echo "/dev/md10 $mountPoint ext4 defaults,nofail 0 2" >> /etc/fstab
-	    mount /dev/md10
+        mkfs -t ext4 /dev/md10
+        echo "/dev/md10 $mountPoint ext4 defaults,nofail 0 2" >> /etc/fstab
+        mount /dev/md10
     fi
 }
 
@@ -130,7 +130,7 @@ setup_shares()
     mkdir -p $SHARE_DATA
 
     if is_master; then
-	    setup_data_disks $SHARE_DATA
+        setup_data_disks $SHARE_DATA
         echo "$SHARE_HOME    *(rw,async)" >> /etc/exports
         echo "$SHARE_DATA    *(rw,async)" >> /etc/exports
         service nfsserver status && service nfsserver reload || service nfsserver start
@@ -143,9 +143,9 @@ setup_shares()
     fi
 }
 
-# Downloads/builds/installs munged on the node.  
-# The munge key is generated on the master node and placed 
-# in the data share.  
+# Downloads/builds/installs munged on the node.
+# The munge key is generated on the master node and placed
+# in the data share.
 # Worker nodes copy the existing key from the data share.
 #
 install_munge()
@@ -171,7 +171,7 @@ install_munge()
 
     if is_master; then
         dd if=/dev/urandom bs=1 count=1024 > /etc/munge/munge.key
-		mkdir -p $SLURM_CONF_DIR
+        mkdir -p $SLURM_CONF_DIR
         cp /etc/munge/munge.key $SLURM_CONF_DIR
     else
         cp $SLURM_CONF_DIR/munge.key /etc/munge/munge.key
@@ -196,12 +196,12 @@ install_slurm_config()
 
         mkdir -p $SLURM_CONF_DIR
 
-	    wget "$TEMPLATE_BASE_URL/slurm.template.conf"
+        wget "$TEMPLATE_BASE_URL/slurm.template.conf"
 
-		cat slurm.template.conf |
-		        sed 's/__MASTER__/'"$MASTER_HOSTNAME"'/g' |
-				sed 's/__WORKER_HOSTNAME_PREFIX__/'"$WORKER_HOSTNAME_PREFIX"'/g' |
-				sed 's/__LAST_WORKER_INDEX__/'"$LAST_WORKER_INDEX"'/g' > $SLURM_CONF_DIR/slurm.conf
+        cat slurm.template.conf |
+                 sed 's/__MASTER__/'"$MASTER_HOSTNAME"'/g' |
+                 sed 's/__WORKER_HOSTNAME_PREFIX__/'"$WORKER_HOSTNAME_PREFIX"'/g' |
+                 sed 's/__LAST_WORKER_INDEX__/'"$LAST_WORKER_INDEX"'/g' > $SLURM_CONF_DIR/slurm.conf
     fi
 
     ln -s $SLURM_CONF_DIR/slurm.conf /etc/slurm/slurm.conf
@@ -226,7 +226,7 @@ install_slurm()
     tar xvfz slurm-$SLURM_VERSION.tar.gz
 
     cd slurm-slurm-$SLURM_VERSION
-	
+
     ./configure -libdir=/usr/lib64 --prefix=/usr --sysconfdir=/etc/slurm && make && make install
 
     install_slurm_config
@@ -257,7 +257,7 @@ setup_hpc_user()
         echo "Host *" > $SHARE_HOME/$HPC_USER/.ssh/config
         echo "    StrictHostKeyChecking no" >> $SHARE_HOME/$HPC_USER/.ssh/config
         echo "    UserKnownHostsFile /dev/null" >> $SHARE_HOME/$HPC_USER/.ssh/config
-		echo "    PasswordAuthentication no" >> $SHARE_HOME/$HPC_USER/.ssh/config
+        echo "    PasswordAuthentication no" >> $SHARE_HOME/$HPC_USER/.ssh/config
 
         chown $HPC_USER:$HPC_GROUP $SHARE_HOME/$HPC_USER/.ssh/authorized_keys
         chown $HPC_USER:$HPC_GROUP $SHARE_HOME/$HPC_USER/.ssh/config
@@ -276,13 +276,13 @@ setup_env()
 {
     # Set unlimited mem lock
     echo "$HPC_USER hard memlock unlimited" >> /etc/security/limits.conf
-	echo "$HPC_USER soft memlock unlimited" >> /etc/security/limits.conf
+    echo "$HPC_USER soft memlock unlimited" >> /etc/security/limits.conf
 
-	# Intel MPI config for IB
+        # Intel MPI config for IB
     echo "# IB Config for MPI" > /etc/profile.d/hpc.sh
-	echo "export I_MPI_FABRICS=shm:dapl" >> /etc/profile.d/hpc.sh
-	echo "export I_MPI_DAPL_PROVIDER=ofa-v2-ib0" >> /etc/profile.d/hpc.sh
-	echo "export I_MPI_DYNAMIC_CONNECTION=0" >> /etc/profile.d/hpc.sh
+    echo "export I_MPI_FABRICS=shm:dapl" >> /etc/profile.d/hpc.sh
+    echo "export I_MPI_DAPL_PROVIDER=ofa-v2-ib0" >> /etc/profile.d/hpc.sh
+    echo "export I_MPI_DYNAMIC_CONNECTION=0" >> /etc/profile.d/hpc.sh
 }
 
 add_sdk_repo
