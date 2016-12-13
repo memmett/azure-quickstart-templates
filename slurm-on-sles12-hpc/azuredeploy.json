@@ -246,11 +246,12 @@
       "location": "[resourceGroup().location]",
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('newStorageAccountName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]",
+        "[concat('Microsoft.Compute/availabilitySets/', variables('newAvailabilitySetName'))]"
       ],
       "properties": {
         "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('newAvailabilitySetName'))]"
+          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('newAvailabilitySetName'))]"
         },
         "hardwareProfile": {
           "vmSize": "[parameters('headNodeSize')]"
