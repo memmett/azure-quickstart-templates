@@ -125,6 +125,7 @@
     "imageOffer": "SLES-HPC",
     "slesOSVersion": "12",
     "newStorageAccountName": "[concat('st', uniqueString(resourceGroup().id))]",
+    "newAvailabilitySetName": "[concat('as', uniqueString(resourceGroup().id))]",
     "vmStorageAccountContainerName": "vhd",
     "OSDiskName": "osdisk",
     "publicIPAddressType": "Dynamic",
@@ -158,20 +159,17 @@
     "storageAccountType": "Standard_LRS"
   },
   "resources": [
-	  {
-            
-            "type": "Microsoft.Compute/availabilitySets",
-            "name": "ib_availset",
-            "apiVersion": "2015-06-15",
-            "location": "[resourceGroup().location]",
-            "tags": {},
-            "properties": {
-                "platformUpdateDomainCount": 5,
-                "platformFaultDomainCount": 3
-            },
-            "resources": [],
-            "dependsOn": []
-        },	  
+    {
+          "type": "Microsoft.Compute/availabilitySets",
+          "name": "[variables('newAvailabilitySetName')]",
+          "apiVersion": "[variables('armApiVersion')]",
+          "location": "[resourceGroup().location]",
+          "tags": {},
+          "properties": {
+              // "platformUpdateDomainCount": 5,
+              // "platformFaultDomainCount": 3
+          },
+    },
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('newStorageAccountName')]",
@@ -251,6 +249,9 @@
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
       "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('newAvailabilitySetName'))]"
+        },
         "hardwareProfile": {
           "vmSize": "[parameters('headNodeSize')]"
         },
