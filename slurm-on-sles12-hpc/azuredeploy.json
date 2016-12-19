@@ -15,11 +15,17 @@
         "description": "User name for the Virtual Machine. Pick a valid username otherwise there will be a BadRequest error."
       }
     },
-    "adminPassword": {
-      "type": "securestring",
-      "metadata": {
-        "description": "Admin password. Pick a complex password with uppercase letters, lowercase letters, digits, and symbols. The password should not be longer than 16. Otherwise you'll get a BadRequest error."
-      }
+    // "adminPassword": {
+    //   "type": "securestring",
+    //   "metadata": {
+    //     "description": "Admin password. Pick a complex password with uppercase letters, lowercase letters, digits, and symbols. The password should not be longer than 16. Otherwise you'll get a BadRequest error."
+    //   }
+    // },
+    "sshKeyData": {
+        "type": "string",
+        "metadata": {
+            "description": "SSH rsa public key file as a string."
+        }
     },
     "hpcUserName": {
       "type": "string",
@@ -142,6 +148,7 @@
     "OSDiskName": "osdisk",
     "publicIPAddressType": "Dynamic",
     "publicIPAddressName": "publicips",
+    "sshKeyPath": "[concat('/home/',parameters('adminUserName'),'/.ssh/authorized_keys')]",      
     "masterVMName": "master",
     "workerVMName": "worker",
 	"armApiVersion": "2015-06-15",
@@ -271,7 +278,18 @@
         "osProfile": {
           "computername": "[variables('masterVMName')]",
           "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
+          "linuxConfiguration": {
+              "disablePasswordAuthentication": "true",
+              "ssh": {
+                  "publicKeys": [
+                      {
+                          "path": "[variables('sshKeyPath')]",
+                          "keyData": "[parameters('sshKeyData')]"
+                      }
+                  ]
+              }
+          }
+//          "adminPassword": "[parameters('adminPassword')]"
         },
         "storageProfile": {
           "imageReference": {
